@@ -652,7 +652,7 @@ namespace FolderScanner
         }
         private void SettingHelp_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息");
+            MessageBox.Show("1.就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息\r\n2.1软件更新的时候推荐使用电信网，移动网有点坑\r\n2.2.如果软件无法更新或更新出错，可在浏览器中打开https://github.com/zou-z/FolderScanner/releases进行下载更新");
         }
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
         {

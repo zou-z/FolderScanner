@@ -112,8 +112,5 @@
   <ItemGroup>
     <Resource Include="folder_scanner.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resource\Version.txt" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

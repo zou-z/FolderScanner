@@ -409,7 +409,7 @@
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <Button Grid.Row="0" Content="访问主页" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="VisitHomeWebsite" Click="VisitHomeWebsite_Click"/>
+                            <Button Grid.Row="0" Content="访问主页" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="VisitHomeWebsite" Click="VisitHomeWebsite_Click" ToolTip="https://github.com/zou-z/FolderScanner"/>
                             <Button Grid.Row="1" Content="检查更新" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingUpdate" Click="SettingUpdate_Click"/>
                             <Button Grid.Row="2" Content="帮助" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingHelp" Click="SettingHelp_Click"/>
                             <Button Grid.Row="3" Content="关于" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingAbout" Click="SettingAbout_Click"/>
