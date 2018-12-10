@@ -646,7 +646,7 @@ namespace FolderScanner
         }
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("版本: " + Application.ResourceAssembly.GetName().Version.ToString() + "\r\n作者邮箱: 1575375168@qq.com\r\nGitHub: https://github.com/zouzhua/FolderScanner");
+            MessageBox.Show("版本: " + Application.ResourceAssembly.GetName().Version.ToString() + "\r\n作者邮箱: 1575375168@qq.com\r\nGitHub: https://github.com/zou-z/FolderScanner");
         }
         private void SettingUpdate_Click(object sender, RoutedEventArgs e)
         {
