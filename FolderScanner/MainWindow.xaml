@@ -1,0 +1,431 @@
+﻿<Window x:Class="FolderScanner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FolderScanner"
+        mc:Ignorable="d"
+        Title="FolderScanner" Height="750" Width="1250" Closing="Window_Closing">
+    <Window.Resources>
+        <Style x:Key="ButtonHover" TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="White">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="Blue"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="buttonTemplate" TargetType="{x:Type Button}">
+            <Setter Property="TextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+        <Style x:Key="SearchTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="15" />
+                                <ColumnDefinition Width="23" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,0,2" Background="White">
+                                <ScrollViewer x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <Border Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,0,2" Background="White">
+                                <Button x:Name="ClearSearchTextBox" Width="15" Height="15" TextOptions.TextFormattingMode="Display" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE711;" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="10" Click="ClearSearchTextBox_Click"/>
+                            </Border>
+                            <Border Grid.Column="2" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,2,2" Background="White">
+                                <Button x:Name="SearchPath" Width="20" Height="20" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE1A3;" TextOptions.TextFormattingMode="Display" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="13" Click="SearchPath_Click" ToolTip="查找下一个"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
+                                <Setter TargetName="ClearSearchTextBox" Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#FF0078D7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RescanTextBox" TargetType="{x:Type TextBox}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="24" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,0,2" Background="White">
+                                <ScrollViewer x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                            <Border Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,2,2" Background="White">
+                                <Button x:Name="RescanTextBox" Width="16" Height="16" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE711;" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="10" Click="RescanTextBox_Click"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
+                                <Setter TargetName="RescanTextBox" Property="Visibility" Value="Hidden"/>
+                            </DataTrigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#FF0078D7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="20" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="30"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" x:Name="BackwardButton"  Content="&#xE00E;" ToolTip="返回上一层目录" Style="{StaticResource buttonTemplate}" Click="BackwardButton_Click"/>
+            <Button Grid.Column="1" x:Name="ForwardButton" Content="&#xE00F;" ToolTip="前进" Style="{StaticResource buttonTemplate}" Click="ForwardButton_Click"/>
+            <StackPanel x:Name="textBoxPanel" Grid.Column="3" VerticalAlignment="Center">
+                <TextBox x:Name="thePathNow" Height="23" VerticalContentAlignment="Center" TextChanged="ThePathNow_TextChanged" PreviewKeyDown="ThePathNow_PreviewKeyDown" Style="{StaticResource SearchTextBox}" Width="{Binding Path=ActualWidth,ElementName=textBoxPanel}"/>
+            </StackPanel>
+            <Button Grid.Column="5" x:Name="RestartButton" Content="&#xE710;" ToolTip="添加扫描路径" Style="{StaticResource buttonTemplate}" Click="RestartButton_Click"/>
+        </Grid>
+        <Grid Grid.Row="1" x:Name="MiddleDisplayGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="89.75" />
+                <ColumnDefinition Width="90.25"/>
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="350" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="2" x:Name="AdjustGrid0" Cursor="SizeWE" ToolTip="左右拖动鼠标改变显示区域大小" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="15"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="1"  Background="Gainsboro" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            </Grid>
+            <Grid Grid.Column="4" x:Name="AdjustGrid1" Cursor="SizeWE" ToolTip="左右拖动鼠标改变显示区域大小" Background="White">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="15"/>
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="1" Background="Gainsboro" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
+            </Grid>
+            <TreeView x:Name="treeView" Grid.Column="0" BorderThickness="0" SelectedItemChanged="TreeView_SelectedItemChanged" Grid.ColumnSpan="2">
+                <TreeView.Resources>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+                        <Setter Property="IsSelected" Value="{Binding IsSelected}"/>
+                    </Style>
+                </TreeView.Resources>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image VerticalAlignment="Center" Source="/Resource/folder.png" Width="16" Height="16" Margin="0,0,2,2"></Image>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}" Margin="2,0,2,0"></TextBlock>
+                            <StackPanel.ToolTip>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding FullPath}" TextWrapping="Wrap" MaxWidth="200" ></TextBlock>
+                            </StackPanel.ToolTip>
+                            <StackPanel.Tag>
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Size}"></TextBlock>
+                            </StackPanel.Tag>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="刷新该树形结构" x:Name="RefreshThisTree" Click="RefreshThisTree_Click" ToolTip="此操作只刷新选中的树形结构">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="13" Text="&#xE149;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="删除该树形结构" x:Name="DelThisTree" Click="DelThisTree_Click" ToolTip="此操作不会删除任何文件或文件夹">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="13" Text="&#xE107;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="用文件管理器打开此处" x:Name="OpenNodePath" Click="OpenNodePath_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="13" Text="&#xE816;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </TreeView.ContextMenu>
+            </TreeView>
+            <ListView x:Name="listView" Grid.Column="3" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click">
+                <ListView.View>
+                    <GridView>
+                        <GridView.ColumnHeaderContainerStyle>
+                            <Style TargetType="GridViewColumnHeader">
+                                <Setter Property="BorderThickness" Value="0"></Setter>
+                                <Setter Property="BorderBrush" Value="Transparent"></Setter>
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="HorizontalContentAlignment" Value="left"/>
+                            </Style>
+                        </GridView.ColumnHeaderContainerStyle>
+                        <GridViewColumn x:Name="Column0" Width="170">
+                            <GridViewColumn.Header>
+                                <Grid x:Name="ColumnNameGrid" Width="{Binding Path=ActualWidth,ElementName=Column0}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="名称"/>
+                                    <TextBlock Grid.Column="1" x:Name="ColumnName" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                                </Grid>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Image Source="{Binding ImgPath}" Width="16" Height="16"/>
+                                        <TextBlock VerticalAlignment="Center" Text="{Binding Name}" Margin="2,0,0,0"></TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="Column1" Width="150" DisplayMemberBinding="{Binding DisplaySize}">
+                            <GridViewColumn.Header>
+                                <Grid x:Name="ColumnSizeGrid" Width="{Binding Path=ActualWidth,ElementName=Column1}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="大小"/>
+                                    <TextBlock Grid.Column="1" x:Name="ColumnSize" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                                </Grid>
+                            </GridViewColumn.Header>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="Column2" Width="180">
+                            <GridViewColumn.Header>
+                                <Grid x:Name="ColumnRatioGrid" Width="{Binding Path=ActualWidth,ElementName=Column2}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="占比"/>
+                                    <TextBlock Grid.Column="1" x:Name="ColumnRatio" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                                </Grid>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid Width="{Binding Path=ActualWidth,ElementName=Column2}" Height="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="55"/>
+                                        </Grid.ColumnDefinitions>
+                                        <ProgressBar Grid.Column="0" Value="{Binding Ratio}" BorderThickness="0"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding DisplayRatio}" FontSize="10" Margin="5,0,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn x:Name="Column3" Width="140" DisplayMemberBinding="{Binding CreationTime}">
+                            <GridViewColumn.Header>
+                                <Grid x:Name="ColumnCreationTimeGrid" Width="{Binding Path=ActualWidth,ElementName=Column3}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="创建时间"/>
+                                    <TextBlock Grid.Column="1" x:Name="ColumnCreationTime" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center"/>
+                                </Grid>
+                            </GridViewColumn.Header>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="返回上一层目录" x:Name="Backward" Click="Backward_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="13" Text="&#xE0A6;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="前进" x:Name="Forward" Click="Forward_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="13" Text="&#xE0AB;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="打开选中项" ToolTip="多选时只打开最先选中的项" x:Name="OpenListViewItem" Click="OpenListViewItem_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE815;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="用文件管理器打开此处" x:Name="OpenItemPath" Click="OpenItemPath_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE816;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="清除排序" x:Name="ClearOrderInfo" Click="ClearOrderInfo_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE291;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="删除选中的所有项目" ToolTip="删除的项目将无法在回收站找回" x:Name="DelAllSelectItems" Click="DelAllSelectItems_Click">
+                            <MenuItem.Icon>
+                                <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="14" Text="&#xE107;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+            <Canvas x:Name="StatePanel" Grid.Column="5">
+                <StackPanel x:Name="InitPanel" Margin="25" Width="300">
+                    <Border BorderThickness="0">
+                        <WrapPanel Background="White" Height="50">
+                            <TextBlock Text="点击右上角的 " FontSize="13" Margin="10,16,0,16"/>
+                            <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE710;" Margin="0,18,0,0"/>
+                            <TextBlock Text=" 或" FontSize="13" Margin="0,16,0,16"/>
+                            <Button BorderThickness="0" Content="这里" Background="White" Height="17" Click="RestartButton_Click"/>
+                            <TextBlock Text="开始或者重置" FontSize="13" Margin="0,16,10,16"/>
+                        </WrapPanel>
+                        <Border.Effect>
+                            <DropShadowEffect Color="DodgerBlue" BlurRadius="3" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                </StackPanel>
+                <StackPanel x:Name="ScanInfoPanel" Margin="25" Width="300" Height="50">
+                    <Border BorderThickness="0">
+                        <Grid Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="2"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" x:Name="TipText" Text="扫描中..." VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <ProgressBar Grid.Row="1" x:Name="progressBar" Foreground="DodgerBlue" Width="300" Height="2" BorderThickness="0"/>
+                        </Grid>
+                        <Border.Effect>
+                            <DropShadowEffect Color="DodgerBlue" BlurRadius="3" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                </StackPanel>
+                <StackPanel x:Name="ChildItemsPanel" Margin="5">
+                    <ListBox x:Name="listBox" Width="340" Height="653" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="Red" BorderThickness="0">
+                                    <Grid Width="280">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="15"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Image Grid.Column="0" Source="{Binding ListBoxImgPath}" Width="16" Height="16"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding ListBoxItemName}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding ListBoxItemSize}"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </StackPanel>
+                <StackPanel x:Name="FileDetailPanel" Margin="25">
+                    <Grid Width="300" Height="623">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Image Grid.Row="0" x:Name="FileDetailImg" Width="Auto" Height="Auto"/>
+                        <TextBlock Grid.Row="1" VerticalAlignment="Center" TextWrapping = "Wrap" Margin="0,10,0,0" x:Name="FileDetailName"/>
+                        <TextBlock Grid.Row="2" VerticalAlignment="Center" TextWrapping = "Wrap" Margin="0,10,0,0" x:Name="FileDetailSize"/>
+                        <TextBlock Grid.Row="3" VerticalAlignment="Center" TextWrapping = "Wrap" Margin="0,10,0,0" x:Name="FileDetailPath"/>
+                        <TextBlock Grid.Row="4" VerticalAlignment="Center" TextWrapping = "Wrap" Margin="0,10,0,0" x:Name="FileDetailCreationTime"/>
+                    </Grid>
+                </StackPanel>
+                <Popup x:Name="AddScanPopup" PopupAnimation="Fade" Width="352" Height="105" PlacementTarget="{Binding ElementName=RestartButton}" Placement="Left" AllowsTransparency="True" StaysOpen="False" VerticalOffset="30" HorizontalOffset="29">
+                    <Border Background="White" BorderBrush="RoyalBlue" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="5"/>
+                                <RowDefinition Height="30"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock x:Name="AddScanTip" Grid.Row="0" Margin="20,10,20,3" Text="请输入路径:" FontSize="13"/>
+                            <TextBox x:Name="AddScanPath" Grid.Row="1" Margin="20,8,20,8" Width="310" Height="24" MaxLines="1" Text="D:\EasyBCD" Style="{StaticResource RescanTextBox}" VerticalContentAlignment="Center" PreviewKeyDown="RescanPath_PreviewKeyDown"/>
+                            <WrapPanel Grid.Row="3">
+                                <Button x:Name="AddScanStart" Content="确认" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanStart_Click"/>
+                                <Button x:Name="AddScanCancel" Content="取消" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanCancel_Click"/>
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+                </Popup>
+                <Popup x:Name="SuggestionPopup" PopupAnimation="Fade" Width="{Binding Path=ActualWidth,ElementName=thePathNow}" PlacementTarget="{Binding ElementName=thePathNow}" Placement="Bottom" AllowsTransparency="True" StaysOpen="False">
+                    <ListBox x:Name="SuggestItemsListBox" BorderThickness="1,0,1,1" ScrollViewer.HorizontalScrollBarVisibility="Disabled" PreviewMouseUp="SuggestItemsListBox_PreviewMouseUp" PreviewKeyDown="SuggestItemsListBox_PreviewKeyDown">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FullPath}" ToolTip="{Binding FullPath}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.Resources>
+                            <Style TargetType="ListBox">
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            </Style>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            </Style>
+                        </ListBox.Resources>
+                    </ListBox>
+                </Popup>
+                <Popup x:Name="SettingPopup" Width="200" PlacementTarget="{Binding ElementName=Setting}" Placement="Top" StaysOpen="False" Closed="SettingPopup_Closed">
+                    <Border Background="White" BorderBrush="RoyalBlue" BorderThickness="1">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="30"/>
+                            </Grid.RowDefinitions>
+                            <Button Grid.Row="0" Content="检查更新" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingUpdate" Click="SettingUpdate_Click"/>
+                            <Button Grid.Row="1" Content="帮助" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingHelp" Click="SettingHelp_Click"/>
+                            <Button Grid.Row="2" Content="关于" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingAbout" Click="SettingAbout_Click"/>
+                        </Grid>
+                    </Border>
+                </Popup>
+            </Canvas>
+        </Grid>
+        <Grid x:Name="BottomGrid" Grid.Row="2" Background="White">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="Setting" Grid.Column="0" BorderThickness="0" FontSize="12" Background="Transparent" Content="&#xE010;" TextBlock.FontFamily="Segoe MDL2 Assets" Click="Setting_Click" TextOptions.TextFormattingMode="Display" ToolTip="选项"/>
+            <TextBlock x:Name="ItemDetail" Grid.Column="2" Text="0 个项目" VerticalAlignment="Center"/>
+            <TextBlock x:Name="SelectedItemNum" Grid.Column="3" Text="已选择 0 个项目" VerticalAlignment="Center"/>
+        </Grid>
+    </Grid>
+</Window>
