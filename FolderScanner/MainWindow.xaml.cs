@@ -640,6 +640,16 @@ namespace FolderScanner
             Setting.Content = "\xE010";
             Setting.IsEnabled = true;
         }
+        private void VisitHomeWebsite_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("https://github.com/zou-z/FolderScanner");
+        }
+        private void SettingUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            SettingPopup.IsOpen = false;
+            UpdateWindow updateWindow = new UpdateWindow { Owner = this };
+            updateWindow.ShowDialog();
+        }
         private void SettingHelp_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息");
@@ -647,10 +657,6 @@ namespace FolderScanner
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("版本: " + Application.ResourceAssembly.GetName().Version.ToString() + "\r\n作者邮箱: 1575375168@qq.com\r\nGitHub: https://github.com/zou-z/FolderScanner");
-        }
-        private void SettingUpdate_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
     class Kernel

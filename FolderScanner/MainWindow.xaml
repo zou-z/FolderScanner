@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FolderScanner"
         mc:Ignorable="d"
-        Title="FolderScanner" Height="750" Width="1250" Closing="Window_Closing">
+        Title="文件夹扫描工具" Height="750" Width="1250" Closing="Window_Closing">
     <Window.Resources>
         <Style x:Key="ButtonHover" TargetType="Button">
             <Setter Property="Template">
@@ -407,10 +407,12 @@
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="30"/>
                                 <RowDefinition Height="30"/>
+                                <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
-                            <Button Grid.Row="0" Content="检查更新" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingUpdate" Click="SettingUpdate_Click"/>
-                            <Button Grid.Row="1" Content="帮助" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingHelp" Click="SettingHelp_Click"/>
-                            <Button Grid.Row="2" Content="关于" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingAbout" Click="SettingAbout_Click"/>
+                            <Button Grid.Row="0" Content="访问主页" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="VisitHomeWebsite" Click="VisitHomeWebsite_Click"/>
+                            <Button Grid.Row="1" Content="检查更新" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingUpdate" Click="SettingUpdate_Click"/>
+                            <Button Grid.Row="2" Content="帮助" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingHelp" Click="SettingHelp_Click"/>
+                            <Button Grid.Row="3" Content="关于" Background="White" HorizontalContentAlignment="Left" Padding="20,0,0,0" BorderThickness="0" x:Name="SettingAbout" Click="SettingAbout_Click"/>
                         </Grid>
                     </Border>
                 </Popup>
