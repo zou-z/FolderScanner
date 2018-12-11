@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -109,6 +110,10 @@ namespace FolderScanner
                 progressBar.Value = 100;
                 ratioTextBlock.Text = "100%";
                 DownloadState.Text = "完成";
+                Process process = new Process();
+                process.StartInfo.FileName = "explorer.exe";
+                process.StartInfo.Arguments = Directory.GetCurrentDirectory();
+                process.Start();
             }));
             stream.Close();
             responseStream.Close();

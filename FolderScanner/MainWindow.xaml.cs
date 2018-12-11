@@ -706,7 +706,6 @@ namespace FolderScanner
                 tipText.Text = "扫描中...(" + progressBar.Value.ToString() + "%)";
                 ItemDetail.Text = ItemNum.ToString() + " 个项目  " + direNum + " 个文件夹  " + fileNum + " 个文件";
             }));
-            //可能要添加try
             foreach (DirectoryInfo dire in Dire.GetDirectories())
             {
                 if ((dire.Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
@@ -746,17 +745,21 @@ namespace FolderScanner
         private void GetFolderSize(FolderTree folderTree)
         {
             DirectoryInfo Dire = new DirectoryInfo(folderTree.FullPath);
-            foreach (DirectoryInfo dire in Dire.GetDirectories())
+            try
             {
-                FolderTree childFolder = new FolderTree(dire.Name, dire.FullName) { Parent = folderTree };
-                folderTree.Children.Add(childFolder);
-                GetFolderSize(childFolder);
-                folderTree.Size += childFolder.Size;
+                foreach (DirectoryInfo dire in Dire.GetDirectories())
+                {
+                    FolderTree childFolder = new FolderTree(dire.Name, dire.FullName) { Parent = folderTree };
+                    folderTree.Children.Add(childFolder);
+                    GetFolderSize(childFolder);
+                    folderTree.Size += childFolder.Size;
+                }
+                foreach (FileInfo file in Dire.GetFiles())
+                {
+                    folderTree.Size += file.Length;
+                }
             }
-            foreach (FileInfo file in Dire.GetFiles())
-            {
-                folderTree.Size += file.Length;
-            }
+            catch (System.UnauthorizedAccessException) { }
         }
         private void FinishedAnItem()
         {

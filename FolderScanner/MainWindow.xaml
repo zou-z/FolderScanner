@@ -375,7 +375,7 @@
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
                             <TextBlock x:Name="AddScanTip" Grid.Row="0" Margin="20,10,20,3" Text="请输入路径:" FontSize="13"/>
-                            <TextBox x:Name="AddScanPath" Grid.Row="1" Margin="20,8,20,8" Width="310" Height="24" MaxLines="1" Text="D:\EasyBCD" Style="{StaticResource RescanTextBox}" VerticalContentAlignment="Center" PreviewKeyDown="RescanPath_PreviewKeyDown"/>
+                            <TextBox x:Name="AddScanPath" Grid.Row="1" Margin="20,8,20,8" Width="310" Height="24" MaxLines="1" Text="C:" Style="{StaticResource RescanTextBox}" VerticalContentAlignment="Center" PreviewKeyDown="RescanPath_PreviewKeyDown"/>
                             <WrapPanel Grid.Row="3">
                                 <Button x:Name="AddScanStart" Content="确认" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanStart_Click"/>
                                 <Button x:Name="AddScanCancel" Content="取消" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanCancel_Click"/>
