@@ -6,8 +6,64 @@
         xmlns:local="clr-namespace:FolderScanner"
         mc:Ignorable="d"
         Title="文件夹扫描工具" Height="750" Width="1250" Closing="Window_Closing">
+    
     <Window.Resources>
-        <Style x:Key="ButtonHover" TargetType="Button">
+        <Style x:Key="TitleBTNStyle" TargetType="{x:Type Button}">
+            <Setter Property="TextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="1" BorderBrush="{TemplateBinding BorderBrush}" Background="White">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="BorderBrush" Value="#FF0078D7"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="BorderBrush" Value="#FF0068C7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="TextBoxClearBTNStyle" TargetType="Button">
+            <Setter Property="Height" Value="15"/>
+            <Setter Property="Width" Value="15"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="Content" Value="&#xE711;"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Name="border" BorderThickness="0" BorderBrush="Black" Background="White">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="Red"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="TextBoxSearchBTNStyle" TargetType="Button">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+            <Setter Property="Content" Value="&#xE1A3;"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -26,40 +82,29 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="buttonTemplate" TargetType="{x:Type Button}">
-            <Setter Property="TextBlock.FontFamily" Value="Segoe MDL2 Assets"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="5"/>
-        </Style>
         <Style x:Key="SearchTextBox" TargetType="{x:Type TextBox}">
-            <Setter Property="Template">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="15" />
-                                <ColumnDefinition Width="23" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,0,2" Background="White">
-                                <ScrollViewer x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                            </Border>
-                            <Border Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,0,2" Background="White">
-                                <Button x:Name="ClearSearchTextBox" Width="15" Height="15" TextOptions.TextFormattingMode="Display" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE711;" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="10" Click="ClearSearchTextBox_Click"/>
-                            </Border>
-                            <Border Grid.Column="2" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,2,2" Background="White">
-                                <Button x:Name="SearchPath" Width="20" Height="20" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE1A3;" TextOptions.TextFormattingMode="Display" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="13" Click="SearchPath_Click" ToolTip="查找下一个"/>
-                            </Border>
-                        </Grid>
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" Background="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="15"/>
+                                    <ColumnDefinition Width="23"/>
+                                </Grid.ColumnDefinitions>
+                                <ScrollViewer Grid.Column="0" x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="True"/>
+                                <Button Grid.Column="1" Style="{StaticResource TextBoxClearBTNStyle}" x:Name="TextBoxClearBTN" Click="ClearSearchTextBox"/>
+                                <Button Grid.Column="2" Style="{StaticResource TextBoxSearchBTNStyle}" Click="SearchPath_Click" ToolTip="查找下一个"/>
+                            </Grid>
+                        </Border>
                         <ControlTemplate.Triggers>
                             <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
-                                <Setter TargetName="ClearSearchTextBox" Property="Visibility" Value="Hidden"/>
+                                <Setter Property="Visibility" TargetName="TextBoxClearBTN" Value="Hidden"/>
                             </DataTrigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter Property="BorderBrush" Value="#FF0078D7"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF0078D7"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -70,31 +115,98 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="24" />
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,0,2" Background="White">
-                                <ScrollViewer x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-                            </Border>
-                            <Border Grid.Column="1" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,2,2,2" Background="White">
-                                <Button x:Name="RescanTextBox" Width="16" Height="16" TextBlock.FontFamily="Segoe MDL2 Assets" Content="&#xE711;" Background="White" BorderThickness="0" Style="{StaticResource ButtonHover}" FontSize="10" Click="RescanTextBox_Click"/>
-                            </Border>
-                        </Grid>
+                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" Background="Transparent">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="24" />
+                                </Grid.ColumnDefinitions>
+                                <ScrollViewer Grid.Column="0" x:Name="PART_ContentHost" Background="White" SnapsToDevicePixels="True" />
+                                <Button Grid.Column="1" x:Name="TextBoxClearBTN" Width="16" Height="16" Click="ClearRescanTextBox" Style="{StaticResource TextBoxClearBTNStyle}"/>
+                            </Grid>
+                        </Border>
                         <ControlTemplate.Triggers>
                             <DataTrigger Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value="">
-                                <Setter TargetName="RescanTextBox" Property="Visibility" Value="Hidden"/>
+                                <Setter Property="Visibility" TargetName="TextBoxClearBTN" Value="Hidden"/>
                             </DataTrigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter Property="BorderBrush" Value="#FF0078D7"/>
+                                <Setter Property="BorderBrush" TargetName="border" Value="#FF0078D7"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="ExpandCollapseToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <TextBlock x:Name="BTNText" FontFamily="Segoe MDL2 Assets" Text="&#xE00F;" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="TextBlock.Text" TargetName="BTNText" Value="&#xE011;"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" TargetName="BTNText" Value="#FF1CC4F7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="TreeViewItemStyle" TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
+            <Setter Property="IsSelected" Value="{Binding IsSelected}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TreeViewItem}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition  Width="19"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.ColumnSpan="2" Margin="-2000,0,0,0"  x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="true"/>
+                            <ToggleButton x:Name="Expander" ClickMode="Press" IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" Style="{StaticResource ExpandCollapseToggleStyle}"/>
+                            <ContentPresenter Grid.Column="1" x:Name="PART_Header" ContentSource="Header" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            <ItemsPresenter x:Name="ItemsHost" Grid.ColumnSpan="2" Grid.Column="1" Grid.Row="1"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsExpanded" Value="false">
+                                <Setter Property="Visibility" TargetName="ItemsHost" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="HasItems" Value="false">
+                                <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="true">
+                                <Setter Property="Background" TargetName="Bd" Value="#FFCDE8FF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="local:MyTreeViewHelper.IsMouseDirectlyOverItem" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#FFE5F3FF" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsSelected" Value="true"/>
+                                    <Condition Property="IsSelectionActive" Value="false"/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Background" TargetName="Bd" Value="#FFD9D9D9"/>
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
+    
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -110,49 +222,24 @@
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="30"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" x:Name="BackwardButton"  Content="&#xE00E;" ToolTip="返回上一层目录" Style="{StaticResource buttonTemplate}" Click="BackwardButton_Click"/>
-            <Button Grid.Column="1" x:Name="ForwardButton" Content="&#xE00F;" ToolTip="前进" Style="{StaticResource buttonTemplate}" Click="ForwardButton_Click"/>
+            <Button Grid.Column="0" x:Name="BackwardButton"  Content="&#xE00E;" ToolTip="返回上一层目录" Style="{StaticResource TitleBTNStyle}" Click="BackwardButton_Click"/>
+            <Button Grid.Column="1" x:Name="ForwardButton" Content="&#xE00F;" ToolTip="前进" Style="{StaticResource TitleBTNStyle}" Click="ForwardButton_Click"/>
             <StackPanel x:Name="textBoxPanel" Grid.Column="3" VerticalAlignment="Center">
-                <TextBox x:Name="thePathNow" Height="23" VerticalContentAlignment="Center" TextChanged="ThePathNow_TextChanged" PreviewKeyDown="ThePathNow_PreviewKeyDown" Style="{StaticResource SearchTextBox}" Width="{Binding Path=ActualWidth,ElementName=textBoxPanel}"/>
+                <TextBox x:Name="thePathNow" Height="23" TextChanged="ThePathNow_TextChanged" PreviewKeyDown="ThePathNow_PreviewKeyDown" Style="{StaticResource SearchTextBox}" Width="{Binding Path=ActualWidth,ElementName=textBoxPanel}"/>
             </StackPanel>
-            <Button Grid.Column="5" x:Name="RestartButton" Content="&#xE710;" ToolTip="添加扫描路径" Style="{StaticResource buttonTemplate}" Click="RestartButton_Click"/>
+            <Button Grid.Column="5" x:Name="RestartButton" Content="&#xE710;" ToolTip="添加扫描路径" Style="{StaticResource TitleBTNStyle}" Click="RestartButton_Click"/>
         </Grid>
         <Grid Grid.Row="1" x:Name="MiddleDisplayGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="89.75" />
-                <ColumnDefinition Width="90.25"/>
-                <ColumnDefinition Width="7" />
+                <ColumnDefinition Width="180"/>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="7" />
                 <ColumnDefinition Width="350" />
             </Grid.ColumnDefinitions>
-            <Grid Grid.Column="2" x:Name="AdjustGrid0" Cursor="SizeWE" ToolTip="左右拖动鼠标改变显示区域大小" Background="White">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="15"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="15"/>
-                </Grid.RowDefinitions>
-                <DockPanel Grid.Row="1"  Background="Gainsboro" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-            </Grid>
-            <Grid Grid.Column="4" x:Name="AdjustGrid1" Cursor="SizeWE" ToolTip="左右拖动鼠标改变显示区域大小" Background="White">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="15"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="15"/>
-                </Grid.RowDefinitions>
-                <DockPanel Grid.Row="1" Background="Gainsboro" Width="1" HorizontalAlignment="Center" VerticalAlignment="Stretch"/>
-            </Grid>
-            <TreeView x:Name="treeView" Grid.Column="0" BorderThickness="0" SelectedItemChanged="TreeView_SelectedItemChanged" Grid.ColumnSpan="2">
-                <TreeView.Resources>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}"/>
-                        <Setter Property="IsSelected" Value="{Binding IsSelected}"/>
-                    </Style>
-                </TreeView.Resources>
+            <TreeView x:Name="treeView" Grid.Column="0" BorderThickness="0" SelectedItemChanged="TreeView_SelectedItemChanged" ItemContainerStyle="{StaticResource TreeViewItemStyle}">
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                         <StackPanel Orientation="Horizontal">
-                            <Image VerticalAlignment="Center" Source="/Resource/folder.png" Width="16" Height="16" Margin="0,0,2,2"></Image>
+                            <Image Source="/Resource/folder.png" Width="16" Height="16" Margin="0,2,2,2"></Image>
                             <TextBlock VerticalAlignment="Center" Text="{Binding Name}" Margin="2,0,2,0"></TextBlock>
                             <StackPanel.ToolTip>
                                 <TextBlock VerticalAlignment="Center" Text="{Binding FullPath}" TextWrapping="Wrap" MaxWidth="200" ></TextBlock>
@@ -183,13 +270,14 @@
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
-            <ListView x:Name="listView" Grid.Column="3" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click">
+            <GridSplitter Grid.Column="0" Width="1"/>
+            <ListView x:Name="listView" Grid.Column="1" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click">
                 <ListView.View>
                     <GridView>
                         <GridView.ColumnHeaderContainerStyle>
                             <Style TargetType="GridViewColumnHeader">
-                                <Setter Property="BorderThickness" Value="0"></Setter>
-                                <Setter Property="BorderBrush" Value="Transparent"></Setter>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="BorderBrush" Value="Transparent"/>
                                 <Setter Property="Background" Value="White"/>
                                 <Setter Property="HorizontalContentAlignment" Value="left"/>
                             </Style>
@@ -299,7 +387,8 @@
                     </ContextMenu>
                 </ListView.ContextMenu>
             </ListView>
-            <Canvas x:Name="StatePanel" Grid.Column="5">
+            <GridSplitter Grid.Column="1" Width="1"/>
+            <Canvas x:Name="StatePanel" Grid.Column="2">
                 <StackPanel x:Name="InitPanel" Margin="25" Width="300">
                     <Border BorderThickness="0">
                         <WrapPanel Background="White" Height="50">
@@ -375,7 +464,7 @@
                                 <RowDefinition Height="30"/>
                             </Grid.RowDefinitions>
                             <TextBlock x:Name="AddScanTip" Grid.Row="0" Margin="20,10,20,3" Text="请输入路径:" FontSize="13"/>
-                            <TextBox x:Name="AddScanPath" Grid.Row="1" Margin="20,8,20,8" Width="310" Height="24" MaxLines="1" Text="C:" Style="{StaticResource RescanTextBox}" VerticalContentAlignment="Center" PreviewKeyDown="RescanPath_PreviewKeyDown"/>
+                            <TextBox x:Name="AddScanPath" Grid.Row="1" Margin="20,8,20,8" Width="310" Height="24" Style="{StaticResource RescanTextBox}" Text="D:\EasyBCD" VerticalContentAlignment="Center" PreviewKeyDown="RescanPath_PreviewKeyDown"/>
                             <WrapPanel Grid.Row="3">
                                 <Button x:Name="AddScanStart" Content="确认" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanStart_Click"/>
                                 <Button x:Name="AddScanCancel" Content="取消" Width="175" Height="30" Background="White" Foreground="RoyalBlue" FontSize="14" BorderThickness="0" Click="AddScanCancel_Click"/>

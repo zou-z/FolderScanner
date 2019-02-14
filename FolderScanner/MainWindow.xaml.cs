@@ -37,39 +37,12 @@ namespace FolderScanner
             InitializeComponent();
             InitPanel.Visibility = Visibility.Visible;
             ScanInfoPanel.Visibility = ChildItemsPanel.Visibility = FileDetailPanel.Visibility = Visibility.Hidden;
-            AdjustGrid0.MouseMove += delegate (object sender, MouseEventArgs e)
-            {
-                if (e.LeftButton == MouseButtonState.Pressed)
-                {
-                    if (Mouse.Captured == null)
-                        Mouse.Capture(AdjustGrid0);
-                    double x = e.GetPosition(MiddleDisplayGrid).X - 3;
-                    x = x < 0 ? 0 : x;
-                    if (x < MiddleDisplayGrid.ColumnDefinitions[0].ActualWidth + MiddleDisplayGrid.ColumnDefinitions[2].ActualWidth)
-                        MiddleDisplayGrid.ColumnDefinitions[0].Width = new GridLength(x);
-                }
-                else
-                    Mouse.Capture(null);
-            };
-            AdjustGrid1.MouseMove += delegate (object sender, MouseEventArgs e)
-            {
-                if (e.LeftButton == MouseButtonState.Pressed)
-                {
-                    if (Mouse.Captured == null)
-                        Mouse.Capture(AdjustGrid1);
-                    double x = MiddleDisplayGrid.ActualWidth - e.GetPosition(MiddleDisplayGrid).X - 5;
-                    x = x < 0 ? 0 : x;
-                    MiddleDisplayGrid.ColumnDefinitions[4].Width = new GridLength(x);
-                }
-                else
-                    Mouse.Capture(null);
-            };
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            MessageBoxResult result = MessageBox.Show("确定退出程序？", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel);
-            if (result == MessageBoxResult.Cancel)
-                e.Cancel = true;
+            //MessageBoxResult result = MessageBox.Show("确定退出程序？", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel);
+            //if (result == MessageBoxResult.Cancel)
+            //    e.Cancel = true;
         }
 
         /// <summary>
@@ -93,10 +66,6 @@ namespace FolderScanner
         private void RestartButton_Click(object sender, RoutedEventArgs e)
         {
             AddScanPopup.IsOpen = !AddScanPopup.IsOpen;
-        }
-        private void ClearSearchTextBox_Click(object sender, RoutedEventArgs e)
-        {
-            thePathNow.Clear();
         }
         private void ThePathNow_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -200,27 +169,24 @@ namespace FolderScanner
                     FolderTree TargetTree = Folder_Tree[SearchPos].Find(thePathNow.Text);
                     if (TargetTree != null)
                     {
-                        SelectedNode.IsSelected = false;
                         foreach (FolderTree tempRoot in Folder_Tree)
                             tempRoot.IsExpanded = false;
+                        if (SelectedNode != null)
+                            SelectedNode.IsSelected = false;
                         SelectedNode = TargetTree;
+                        SelectedNode.IsSelected = true;
                         do
                         {
                             TargetTree.IsExpanded = true;
                             TargetTree = TargetTree.Parent;
                         } while (TargetTree != null);
-                        SelectedNode.IsSelected = true;
                         treeView.Items.Refresh();
                         SearchPos++;
                         return;
                     }
                 }
-                MessageBox.Show("已查找到最后!");
+                SearchPos = 0;
             }
-        }
-        private void RescanTextBox_Click(object sender, RoutedEventArgs e)
-        {
-            AddScanPath.Clear();
         }
         private void RescanPath_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -228,6 +194,14 @@ namespace FolderScanner
             {
                 AddScanStart_Click(sender, e);
             }
+        }
+        private void ClearSearchTextBox(object sender, RoutedEventArgs e)
+        {
+            thePathNow.Text = "";
+        }
+        private void ClearRescanTextBox(object sender, RoutedEventArgs e)
+        {
+            AddScanPath.Text = "";
         }
         private void AddScanStart_Click(object sender, RoutedEventArgs e)
         {
@@ -738,7 +712,8 @@ namespace FolderScanner
                 FinishedAnItem();
             }
             UpdateListView(folderTree.Size);
-            treeView.Dispatcher.BeginInvoke(new Action(delegate { folderTree.IsSelected = true; treeView.Items.Refresh(); }));
+            folderTree.IsSelected = true;
+            treeView.Dispatcher.BeginInvoke(new Action(delegate { treeView.Items.Refresh(); }));
             progressBar.Dispatcher.BeginInvoke(new Action(delegate { progressBar.Value = 100; }));
             tipText.Dispatcher.BeginInvoke(new Action(delegate { tipText.Text = "完成!"; }));
         }
@@ -896,6 +871,98 @@ namespace FolderScanner
                     return TargetTree;
             }
             return TargetTree;
+        }
+    }
+    public static class MyTreeViewHelper
+    {
+        //
+        // The TreeViewItem that the mouse is currently directly over (or null).
+        //
+        private static TreeViewItem _currentItem = null;
+        //
+        // IsMouseDirectlyOverItem:  A DependencyProperty that will be true only on the
+        // TreeViewItem that the mouse is directly over.  I.e., this won't be set on that
+        // parent item.
+        //
+        // This is the only public member, and is read-only.
+        //
+        // The property key (since this is a read-only DP)
+        private static readonly DependencyPropertyKey IsMouseDirectlyOverItemKey = DependencyProperty.RegisterAttachedReadOnly("IsMouseDirectlyOverItem",typeof(bool),typeof(MyTreeViewHelper),new FrameworkPropertyMetadata(null,new CoerceValueCallback(CalculateIsMouseDirectlyOverItem)));
+        // The DP itself
+        public static readonly DependencyProperty IsMouseDirectlyOverItemProperty = IsMouseDirectlyOverItemKey.DependencyProperty;
+        // A strongly-typed getter for the property.
+        public static bool GetIsMouseDirectlyOverItem(DependencyObject obj)
+        {
+            return (bool)obj.GetValue(IsMouseDirectlyOverItemProperty);
+        }
+        // A coercion method for the property
+        private static object CalculateIsMouseDirectlyOverItem(DependencyObject item, object value)
+        {
+            // This method is called when the IsMouseDirectlyOver property is being calculated
+            // for a TreeViewItem. 
+            if (item == _currentItem)
+                return true;
+            else
+                return false;
+        }
+        //
+        // UpdateOverItem:  A private RoutedEvent used to find the nearest encapsulating
+        // TreeViewItem to the mouse's current position.
+        //
+        private static readonly RoutedEvent UpdateOverItemEvent = EventManager.RegisterRoutedEvent("UpdateOverItem", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(MyTreeViewHelper));
+        //
+        // Class constructor
+        //
+        static MyTreeViewHelper()
+        {
+            // Get all Mouse enter/leave events for TreeViewItem.
+            EventManager.RegisterClassHandler(typeof(TreeViewItem),TreeViewItem.MouseEnterEvent,new MouseEventHandler(OnMouseTransition), true);
+            EventManager.RegisterClassHandler(typeof(TreeViewItem),TreeViewItem.MouseLeaveEvent,new MouseEventHandler(OnMouseTransition), true);
+            // Listen for the UpdateOverItemEvent on all TreeViewItem's.
+            EventManager.RegisterClassHandler(typeof(TreeViewItem),UpdateOverItemEvent,new RoutedEventHandler(OnUpdateOverItem));
+        }
+        //
+        // OnUpdateOverItem:  This method is a listener for the UpdateOverItemEvent.  When it is received,
+        // it means that the sender is the closest TreeViewItem to the mouse (closest in the sense of the
+        // tree, not geographically).
+        static void OnUpdateOverItem(object sender, RoutedEventArgs args)
+        {
+            // Mark this object as the tree view item over which the mouse
+            // is currently positioned.
+            _currentItem = sender as TreeViewItem;
+            // Tell that item to re-calculate the IsMouseDirectlyOverItem property
+            _currentItem.InvalidateProperty(IsMouseDirectlyOverItemProperty);
+            // Prevent this event from notifying other tree view items higher in the tree.
+            args.Handled = true;
+        }
+        //
+        // OnMouseTransition:  This method is a listener for both the MouseEnter event and
+        // the MouseLeave event on TreeViewItems.  It updates the _currentItem, and updates
+        // the IsMouseDirectlyOverItem property on the previous TreeViewItem and the new
+        // TreeViewItem.
+        static void OnMouseTransition(object sender, MouseEventArgs args)
+        {
+            lock (IsMouseDirectlyOverItemProperty)
+            {
+                if (_currentItem != null)
+                {
+                    // Tell the item that previously had the mouse that it no longer does.
+                    DependencyObject oldItem = _currentItem;
+                    _currentItem = null;
+                    oldItem.InvalidateProperty(IsMouseDirectlyOverItemProperty);
+                }
+                // Get the element that is currently under the mouse.
+                IInputElement currentPosition = Mouse.DirectlyOver;
+                // See if the mouse is still over something (any element, not just a tree view item).
+                if (currentPosition != null)
+                {
+                    // Yes, the mouse is over something.
+                    // Raise an event from that point.  If a TreeViewItem is anywhere above this point
+                    // in the tree, it will receive this event and update _currentItem.
+                    RoutedEventArgs newItemArgs = new RoutedEventArgs(UpdateOverItemEvent);
+                    currentPosition.RaiseEvent(newItemArgs);
+                }
+            }
         }
     }
 }
