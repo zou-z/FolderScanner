@@ -208,7 +208,7 @@ namespace FolderScanner
             FolderTree foldertree = SelectedNode = new FolderTree(AddScanPath.Text, AddScanPath.Text);
             Folder_Tree.Add(foldertree);
             Folder_Info.Clear();
-            Kernel kernel = new Kernel(Folder_Tree, Folder_Info, treeView, listView, progressBar, TipText, ItemDetail);
+            Kernel kernel = new Kernel(Folder_Tree, Folder_Info, treeView, listView, progressBar, TipText, ItemDetail, IgnoredFolder);
 
             ChoosePanel(ScanInfoPanel);
             FrontNode.Clear();
@@ -283,7 +283,7 @@ namespace FolderScanner
             SelectedNode = thisTree;
             Folder_Info.Clear();
 
-            Kernel kernel = new Kernel(Folder_Tree, Folder_Info, treeView, listView, progressBar, TipText, ItemDetail);
+            Kernel kernel = new Kernel(Folder_Tree, Folder_Info, treeView, listView, progressBar, TipText, ItemDetail, IgnoredFolder);
 
             ChoosePanel(ScanInfoPanel);
             FrontNode.Clear();
@@ -621,7 +621,8 @@ namespace FolderScanner
         private void SettingHelp_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("1.就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息\r\n" +
-                "2.检查软件更新时如果遇到长时间没反应，请1分钟左右后再次检查软件更新");
+                "2.扫描路径中已忽略的目录为没有权限读取的目录"+
+                "3.检查软件更新时如果遇到长时间没反应，请1分钟左右后再次检查软件更新");
         }
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
         {
@@ -639,19 +640,19 @@ namespace FolderScanner
         private TextBlock tipText;
         private ProgressBar progressBar;
         private TextBlock ItemDetail;
+        private TextBox IgnoredFolder;
 
         private int direNum;
         private int fileNum;
         private int ItemNum;
         private int FinishedItem;
 
-        public Kernel(List<FolderTree> Folder_Tree,
-                      List<FolderInfo> Folder_Info,
-                      TreeView treeView,
-                      ListView listView,
+        public Kernel(List<FolderTree> Folder_Tree, List<FolderInfo> Folder_Info,
+                      TreeView treeView, ListView listView,
                       ProgressBar progressBar,
                       TextBlock tipText,
-                      TextBlock ItemDetail)
+                      TextBlock ItemDetail,
+                      TextBox IgnoredFolder)
         {
             this.Folder_Tree = Folder_Tree;
             this.Folder_Info = Folder_Info;
@@ -660,6 +661,9 @@ namespace FolderScanner
             this.tipText = tipText;
             this.progressBar = progressBar;
             this.ItemDetail = ItemDetail;
+            this.IgnoredFolder = IgnoredFolder;
+
+            IgnoredFolder.Text = "无";
             direNum = fileNum = ItemNum = FinishedItem = 0;
             listView.ItemsSource = null;
             treeView.ItemsSource = Folder_Tree;
@@ -689,10 +693,6 @@ namespace FolderScanner
                 //ListView相关
                 FolderInfo folderInfo = new FolderInfo(dire.Name, childFolder.Size, dire.CreationTime.ToString(), "/Resource/folder.png");
                 Folder_Info.Add(folderInfo);
-                listView.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    listView.Items.Add(new { theName = dire.Name, theSize = childFolder.Size, theCreationTime = dire.CreationTime.ToString(), ImgPath = "/Resource/folder.png" });
-                }));
                 FinishedAnItem();
             }
             foreach (FileInfo file in Dire.GetFiles())
@@ -702,10 +702,6 @@ namespace FolderScanner
                 folderTree.Size += file.Length;
                 FolderInfo folderInfo = new FolderInfo(file.Name, file.Length, file.CreationTime.ToString(), "/Resource/file.png");
                 Folder_Info.Add(folderInfo);
-                listView.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    listView.Items.Add(new { theName = file.Name, theSize = file.Length, theCreationTime = file.CreationTime.ToString(), ImgPath = "/Resource/file.png" });
-                }));
                 FinishedAnItem();
             }
             UpdateListView(folderTree.Size);
@@ -731,7 +727,16 @@ namespace FolderScanner
                     folderTree.Size += file.Length;
                 }
             }
-            catch (System.UnauthorizedAccessException) { }
+            catch (System.UnauthorizedAccessException)
+            {
+                IgnoredFolder.Dispatcher.BeginInvoke(new Action(delegate 
+                {
+                    if (IgnoredFolder.Text == "无")
+                        IgnoredFolder.Text = folderTree.FullPath + "\r\n";
+                    else
+                        IgnoredFolder.Text += folderTree.FullPath + "\r\n";
+                }));
+            }
         }
         private void FinishedAnItem()
         {

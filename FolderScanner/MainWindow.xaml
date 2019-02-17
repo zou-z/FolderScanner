@@ -401,22 +401,35 @@
                             <TextBlock Text="开始或者重置" FontSize="13" Margin="0,16,10,16"/>
                         </WrapPanel>
                         <Border.Effect>
-                            <DropShadowEffect Color="DodgerBlue" BlurRadius="3" ShadowDepth="0"/>
+                            <DropShadowEffect Color="DodgerBlue" BlurRadius="5" ShadowDepth="0"/>
                         </Border.Effect>
                     </Border>
                 </StackPanel>
-                <StackPanel x:Name="ScanInfoPanel" Margin="25" Width="300" Height="50">
-                    <Border BorderThickness="0">
-                        <Grid Background="White">
+                <StackPanel x:Name="ScanInfoPanel" Margin="25" Width="300" Height="Auto">
+                    <Border BorderThickness="0" Background="White" >
+                        <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="40"/>
                                 <RowDefinition Height="2"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" x:Name="TipText" Text="扫描中..." VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            <ProgressBar Grid.Row="1" x:Name="progressBar" Foreground="DodgerBlue" Width="300" Height="2" BorderThickness="0"/>
+                            <ProgressBar Grid.Row="1" x:Name="progressBar" Foreground="RoyalBlue" Width="Auto" Height="2" BorderThickness="0"/>
                         </Grid>
                         <Border.Effect>
-                            <DropShadowEffect Color="DodgerBlue" BlurRadius="3" ShadowDepth="0"/>
+                            <DropShadowEffect Color="DodgerBlue" BlurRadius="5" ShadowDepth="0"/>
+                        </Border.Effect>
+                    </Border>
+                    <Border BorderThickness="0" Background="White" Margin="0,15,0,0">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="已忽略的目录:" Margin="8,8,8,0"/>
+                            <TextBox Grid.Row="1" x:Name="IgnoredFolder" Width="Auto" Height="Auto" MaxHeight="520" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" IsReadOnly="True" Margin="8"/>
+                        </Grid>
+                        <Border.Effect>
+                            <DropShadowEffect Color="DodgerBlue" BlurRadius="5" ShadowDepth="0"/>
                         </Border.Effect>
                     </Border>
                 </StackPanel>
