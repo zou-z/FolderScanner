@@ -38,12 +38,6 @@ namespace FolderScanner
             InitPanel.Visibility = Visibility.Visible;
             ScanInfoPanel.Visibility = ChildItemsPanel.Visibility = FileDetailPanel.Visibility = Visibility.Hidden;
         }
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            //MessageBoxResult result = MessageBox.Show("确定退出程序？", "提示", MessageBoxButton.OKCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel);
-            //if (result == MessageBoxResult.Cancel)
-            //    e.Cancel = true;
-        }
 
         /// <summary>
         /// 上面的控件(3个Button和2个Popup和1个TextBox)
@@ -616,7 +610,7 @@ namespace FolderScanner
         }
         private void VisitHomeWebsite_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("https://github.com/zou-z/FolderScanner");
+            Process.Start("http://www.xunqe.com");
         }
         private void SettingUpdate_Click(object sender, RoutedEventArgs e)
         {
@@ -626,11 +620,14 @@ namespace FolderScanner
         }
         private void SettingHelp_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("1.就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息\r\n2.1软件更新的时候推荐使用电信网，移动网有点坑\r\n2.2.如果软件无法更新或更新出错，可在浏览器中打开https://github.com/zou-z/FolderScanner/releases进行下载更新");
+            MessageBox.Show("1.就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息\r\n" +
+                "2.检查软件更新时如果遇到长时间没反应，请1分钟左右后再次检查软件更新");
         }
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("版本: " + Application.ResourceAssembly.GetName().Version.ToString() + "\r\n作者邮箱: 1575375168@qq.com\r\nGitHub: https://github.com/zou-z/FolderScanner");
+            MessageBox.Show("版本: " + Application.ResourceAssembly.GetName().Version.ToString() + 
+                "\r\n邮箱: 1575375168@qq.com\r\n网址: www.xunqe.com\r\n" +
+                "GitHub: github.com/zou-z/FolderScanner");
         }
     }
     class Kernel

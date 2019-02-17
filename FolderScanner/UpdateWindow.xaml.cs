@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,126 +24,196 @@ namespace FolderScanner
     /// </summary>
     public partial class UpdateWindow : Window
     {
-        int[] thisVersion = new int[] { 1, 0, 0, 0 };
-        int[] latestVersion = new int[] { 1, 0, 0, 0 };
-        HttpWebRequest request;
-        HttpWebResponse response;
-        Stream responseStream;
-        Stream stream;
-        StreamReader reader;
+        UpdateVersion update = new UpdateVersion("FolderScanner", "128.1.174.252", 8800);
 
         public UpdateWindow()
         {
             InitializeComponent();
-            VersionNow.Text += Application.ResourceAssembly.GetName().Version.ToString();
-            thisVersion[0] = Application.ResourceAssembly.GetName().Version.Major;
-            thisVersion[1] = Application.ResourceAssembly.GetName().Version.Minor;
-            thisVersion[2] = Application.ResourceAssembly.GetName().Version.Build;
-            thisVersion[3] = Application.ResourceAssembly.GetName().Version.Revision;
-        }
-        private void GetLatestVersion(object obj)
-        {
-            request = WebRequest.Create("https://github.com/zou-z/FolderScanner/releases/download/1.0/Version.txt") as HttpWebRequest;
-            try
-            {
-                response = request.GetResponse() as HttpWebResponse;
-                responseStream = response.GetResponseStream();
-                reader = new StreamReader(responseStream, Encoding.Default);
-                for (int i = 0; i < 4; i++)
-                    latestVersion[i] = int.Parse(reader.ReadLine());
-                for (int i = 0; i < 4; i++)
-                {
-                    if (latestVersion[i] > thisVersion[i])
-                    {
-                        this.Dispatcher.BeginInvoke(new Action(delegate
-                        {
-                            NewVersionDetail.Text = reader.ReadToEnd();
-                            VersionState.Text = "发现新版本: " + latestVersion[0].ToString() + "." + latestVersion[1].ToString() + "." + latestVersion[2].ToString() + "." + latestVersion[3].ToString();
-                            NewVersionDetail.Visibility = NewVersionTitle.Visibility = Visibility.Visible;
-                            UpdateBtn.Visibility = CancelBtn.Visibility = Visibility.Visible;
-                        }));
-                        return;
-                    }
-                }
-                this.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    VersionState.Text = "已是最新版本";
-                    ConfirmBtn.Visibility = Visibility.Visible;
-                }));
-            }
-            catch (System.Net.WebException)
-            {
-                this.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    VersionState.Text = "连接服务器出错！建议\r\n1.重试\r\n2.在浏览器中打开: https://github.com/zou-z/FolderScanner/releases进行下载";
-                }));
-            }
         }
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Thread t = new Thread(new ParameterizedThreadStart(GetLatestVersion));
+            // 获取当前版本信息
+            VersionNow.Text += Application.ResourceAssembly.GetName().Version.ToString();
+            update.GetNowVersion(Application.ResourceAssembly.GetName().Version.Major,
+                                 Application.ResourceAssembly.GetName().Version.Minor,
+                                 Application.ResourceAssembly.GetName().Version.Build,
+                                 Application.ResourceAssembly.GetName().Version.Revision);
+            // 获取最新的版本信息
+            update.InitControls(VersionState, NewVersionUpdateTime, NewVersionDetail, UpdateBtn, DownloadGrid, progressBar, DownloadedSize);
+            Thread t = new Thread(new ThreadStart(update.Start));
             t.Start();
-        }
-        private void Download(object obj)
-        {
-            string v = latestVersion[0].ToString() + "." + latestVersion[1].ToString() + "." + latestVersion[2].ToString() + "." + latestVersion[3].ToString();
-            request = WebRequest.Create("https://github.com/zou-z/FolderScanner/releases/download/" + v + "/FolderScanner.exe") as HttpWebRequest;
-            response = request.GetResponse() as HttpWebResponse;
-            responseStream = response.GetResponseStream();
-            stream = new FileStream(Directory.GetCurrentDirectory() + "\\FolderScanner_v" + v + ".exe", FileMode.Create);
-            byte[] bArr = new byte[1024];
-            int size = responseStream.Read(bArr, 0, (int)bArr.Length);
-            long sizeNow = size;
-            long sizeTotal = response.ContentLength;
-            while (size > 0)
-            {
-                this.Dispatcher.BeginInvoke(new Action(delegate
-                {
-                    progressBar.Value = 100.0 * sizeNow / sizeTotal;
-                    ratioTextBlock.Text = Math.Round(100.0 * sizeNow / sizeTotal, 2).ToString()+"%";
-                }));
-                stream.Write(bArr, 0, size);
-                size = responseStream.Read(bArr, 0, (int)bArr.Length);
-                sizeNow += size;
-            }
-            this.Dispatcher.BeginInvoke(new Action(delegate
-            {
-                progressBar.Value = 100;
-                ratioTextBlock.Text = "100%";
-                DownloadState.Text = "完成";
-                Process process = new Process();
-                process.StartInfo.FileName = "explorer.exe";
-                process.StartInfo.Arguments = Directory.GetCurrentDirectory();
-                process.Start();
-            }));
-            stream.Close();
-            responseStream.Close();
         }
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
-            MainGrid.RowDefinitions[4].Height = new GridLength(30);
-            UpdateBtn.Visibility = CancelBtn.Visibility = Visibility.Hidden;
-            Thread t = new Thread(new ParameterizedThreadStart(Download));
-            t.Start();
+            if (UpdateBtn.Content.ToString() == "完成")
+            {
+                if (File.Exists(update.full_name + ".exe"))
+                {
+                    Application.Current.Shutdown();
+                    Process.Start(update.full_name + ".exe");
+                }
+                else
+                {
+                    MessageBox.Show("额，刚刚下载的软件的新版本貌似不见了!");
+                    this.Close();
+                }
+            }
+            else
+            {
+                UpdateBtn.Visibility = Visibility.Hidden;
+                DownloadGrid.Visibility = Visibility.Visible;
+                Thread t = new Thread(new ThreadStart(update.DownloadNewVersion));
+                t.Start();
+            }
         }
-        private void ConfirmBtn_Click(object sender, RoutedEventArgs e)
+    }
+    public class UpdateVersion
+    {
+        private readonly IPEndPoint ipe;
+        private readonly string name;
+        public string full_name;
+        private readonly int[] NowV = new int[4];
+
+        public int[] LatestV = new int[4];
+        public string update_time;
+        public string content;
+        public long file_size;
+
+        private TextBlock VState;
+        private TextBlock VTime;
+        private TextBlock VDetail;
+        private Button VUpdate;
+        private ProgressBar VBar;
+        private Grid Vgrid;
+        private TextBlock VRece;
+
+        public UpdateVersion(string name, string host, int ip)
         {
-            this.Close();
+            ipe = new IPEndPoint(IPAddress.Parse(host), ip);
+            this.name = name;
         }
-        private void CancelBtn_Click(object sender, RoutedEventArgs e)
+        public void GetNowVersion(int major,int minor,int build,int revision)
         {
-            this.Close();
+            NowV[0] = major; NowV[1] = minor;
+            NowV[2] = build; NowV[3] = revision;
         }
-        private void Window_Closed(object sender, EventArgs e)
+        public void InitControls(TextBlock State, TextBlock Time, TextBlock Detail, Button Update, Grid grid, ProgressBar Bar, TextBlock Rece)
         {
-            if (response != null)
-                response.Close();
-            if (responseStream != null)
-                responseStream.Close();
-            if (stream != null)
-                stream.Close();
-            if (reader != null)
-                reader.Close();
+            VState = State;
+            VTime = Time;
+            VDetail = Detail;
+            VUpdate = Update;
+            VBar = Bar;
+            Vgrid = grid;
+            VRece = Rece;
+        }
+        public void Start()
+        {
+            try
+            {
+                GetLatestVersionInfo();
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                VState.Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    VState.Text = "连接服务器失败!\r\n可进入以下地址更新:\r\n" +
+                    "www.xunqe.com\r\n或 github.com/zou-z/FolderScanner/releases";
+                }));
+                return;
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                if (LatestV[i] > NowV[i])
+                {
+                    VUpdate.Dispatcher.BeginInvoke(new Action(delegate
+                    {
+                        VState.Text = "发现新版本: " + LatestV[0] + "." + LatestV[1] + "." + LatestV[2] + "." + LatestV[3];
+                        VTime.Text = "发布时间: " + update_time;
+                        VDetail.Text = "\r\n新版本特性:\r\n" + content;
+                        VUpdate.Content = "下载新版本 (" + FormatUnit(file_size) + ")";
+                        VUpdate.Visibility = VTime.Visibility = VDetail.Visibility = Visibility.Visible;
+                    }));
+                    return;
+                }
+            }
+            VState.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                VState.Text = "已是最新版本!";
+            }));
+        }
+        private void GetLatestVersionInfo()
+        {
+            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            clientSocket.Connect(ipe);
+            clientSocket.Send(Encoding.UTF8.GetBytes("GetLatestVersion " + this.name));
+            byte[] result = new byte[1024];
+            int bytes = clientSocket.Receive(result);
+            string res = Encoding.UTF8.GetString(result, 0, bytes);
+            clientSocket.Close();
+            ParseParameter(res);
+        }
+        private void ParseParameter(string res)
+        {
+            string[] para = res.Split(',');
+
+            for (int i = 0; i < 4; i++)
+                LatestV[i] = int.Parse(para[i]);
+
+            DateTime dtStart = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
+            DateTime targetDt = dtStart.AddSeconds(long.Parse(para[4]));
+            update_time = targetDt.ToString();
+
+            content = para[5].Trim('\'').Replace("|||", "\r\n");
+
+            file_size = long.Parse(para[6]);
+        }
+        private string FormatUnit(long size)
+        {
+            string[] units = new string[] { "B", "KB", "MB", "GB" };
+            int p = 0;
+            double temp_size = size;
+            while (temp_size >= 1024)
+            {
+                temp_size /= 1024;
+                p++;
+            }
+            return Math.Round(temp_size, 2).ToString() + " " + units[p];
+        }
+        public void DownloadNewVersion()
+        {
+            this.full_name = this.name + "_v" + LatestV[0] + "." + LatestV[1] + "." + LatestV[2] + "." + LatestV[3];
+            string path = this.name + "/" + full_name + "/" + full_name + ".exe";
+            byte[] result = new byte[1024 * 2];
+
+            Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            clientSocket.Connect(ipe);
+            clientSocket.Send(Encoding.UTF8.GetBytes("Download " + path));
+
+            FileStream fs = new FileStream(full_name + ".exe", FileMode.Create);
+            long rece_size = 0;
+            int length;
+            while (rece_size < this.file_size)
+            {
+                length=clientSocket.Receive(result);
+                fs.Write(result, 0, length);
+                rece_size += length;
+
+                VBar.Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    VBar.Value = rece_size * 100.0 / file_size;
+                    VRece.Text = FormatUnit(rece_size);
+                }));
+            }
+            clientSocket.Close();
+            fs.Close();
+
+            Vgrid.Dispatcher.BeginInvoke(new Action(delegate
+            {
+                Vgrid.Visibility = Visibility.Collapsed;
+                VUpdate.Content = "完成";
+                VUpdate.Visibility = Visibility.Visible;
+            }));
         }
     }
 }
