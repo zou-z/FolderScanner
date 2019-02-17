@@ -186,7 +186,7 @@
                                 <Setter Property="Visibility" TargetName="Expander" Value="Hidden"/>
                             </Trigger>
                             <Trigger Property="IsSelected" Value="true">
-                                <Setter Property="Background" TargetName="Bd" Value="#FFCDE8FF" />
+                                <Setter Property="Background" TargetName="Bd" Value="#FFCCE8FF" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
                                 <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
@@ -194,13 +194,37 @@
                             <Trigger Property="local:MyTreeViewHelper.IsMouseDirectlyOverItem" Value="True">
                                 <Setter Property="Background" TargetName="Bd" Value="#FFE5F3FF" />
                             </Trigger>
-                            <MultiTrigger>
+                            <!--<MultiTrigger>
                                 <MultiTrigger.Conditions>
                                     <Condition Property="IsSelected" Value="true"/>
                                     <Condition Property="IsSelectionActive" Value="false"/>
                                 </MultiTrigger.Conditions>
                                 <Setter Property="Background" TargetName="Bd" Value="#FFD9D9D9"/>
-                            </MultiTrigger>
+                            </MultiTrigger>-->
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ListViewItemStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template" >
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <GridViewRowPresenter VerticalAlignment="Center" Content="{TemplateBinding Content}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#FFCCE8FF"/>
+                                <Setter Property="BorderBrush" TargetName="Bd" Value="#FF99D1FF"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" TargetName="Bd" Value="#FFE5F3FF"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -273,7 +297,7 @@
                 </TreeView.ContextMenu>
             </TreeView>
             <GridSplitter Grid.Column="0" Width="1"/>
-            <ListView x:Name="listView" Grid.Column="1" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click">
+            <ListView x:Name="listView" Grid.Column="1" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click" ItemContainerStyle="{StaticResource ListViewItemStyle}">
                 <ListView.View>
                     <GridView>
                         <GridView.ColumnHeaderContainerStyle>
