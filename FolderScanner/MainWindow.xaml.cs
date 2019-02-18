@@ -621,7 +621,7 @@ namespace FolderScanner
         private void SettingHelp_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("1.就是点击右上角+按键进行扫描，然后就能看到各文件夹的大小情况了，左边是树状图，中间是列表图，右边是详细信息\r\n" +
-                "2.扫描路径中已忽略的目录为没有权限读取的目录"+
+                "2.扫描路径中已忽略的目录为没有权限读取的目录\r\n"+
                 "3.检查软件更新时如果遇到长时间没反应，请1分钟左右后再次检查软件更新");
         }
         private void SettingAbout_Click(object sender, RoutedEventArgs e)
