@@ -136,6 +136,10 @@ namespace FolderScanner
                     }));
                     return;
                 }
+                else if (LatestV[i] < NowV[i])
+                {
+                    break;
+                }
             }
             VState.Dispatcher.BeginInvoke(new Action(delegate
             {

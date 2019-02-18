@@ -447,7 +447,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="350" />
             </Grid.ColumnDefinitions>
-            <ScrollViewer Grid.Column="0" Style="{StaticResource for_scrollviewer}">
+            <ScrollViewer Grid.Column="0" Style="{StaticResource for_scrollviewer}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                 <TreeView x:Name="treeView" BorderThickness="0" SelectedItemChanged="TreeView_SelectedItemChanged" ItemContainerStyle="{StaticResource TreeViewItemStyle}">
                     <TreeView.ItemTemplate>
                         <HierarchicalDataTemplate ItemsSource="{Binding Children}">
@@ -485,7 +485,7 @@
                 </TreeView>
             </ScrollViewer>
             <GridSplitter Grid.Column="0" Width="1"/>
-            <ScrollViewer Grid.Column="1" Style="{StaticResource for_scrollviewer}">
+            <ScrollViewer Grid.Column="1" Style="{StaticResource for_scrollviewer}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                 <ListView x:Name="listView" BorderThickness="0" SelectionChanged="ListView_SelectionChanged" MouseDoubleClick="ListView_MouseDoubleClick" GridViewColumnHeader.Click="ListViewColumnHeader_Click" ItemContainerStyle="{StaticResource ListViewItemStyle}">
                     <ListView.View>
                         <GridView>
@@ -620,10 +620,10 @@
                     </Border>
                 </StackPanel>
                 <StackPanel x:Name="ScanInfoPanel" Margin="25" Width="300" Height="Auto">
-                    <Border BorderThickness="0" Background="White" >
+                    <Border BorderThickness="0" Background="White">
                         <Grid>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="40"/>
+                                <RowDefinition Height="55"/>
                                 <RowDefinition Height="2"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" x:Name="TipText" Text="扫描中..." VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -647,7 +647,7 @@
                         </Border.Effect>
                     </Border>
                 </StackPanel>
-                <ScrollViewer Style="{StaticResource for_scrollviewer}" Width="{Binding ElementName=StatePanel,Path=ActualWidth}" Height="{Binding ElementName=StatePanel,Path=ActualHeight}">
+                <ScrollViewer Style="{StaticResource for_scrollviewer}" Width="{Binding ElementName=StatePanel,Path=ActualWidth}" Height="{Binding ElementName=StatePanel,Path=ActualHeight}" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
                     <StackPanel x:Name="ChildItemsPanel">
                         <ListBox x:Name="listBox" BorderThickness="0">
                             <ListBox.ItemTemplate>

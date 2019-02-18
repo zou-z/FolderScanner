@@ -38,7 +38,13 @@ namespace FolderScanner
             InitPanel.Visibility = Visibility.Visible;
             ScanInfoPanel.Visibility = ChildItemsPanel.Visibility = FileDetailPanel.Visibility = Visibility.Hidden;
         }
-
+        private void ScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+            eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+            eventArg.Source = sender;
+            (sender as ScrollViewer).RaiseEvent(eventArg);
+        }
         /// <summary>
         /// 上面的控件(3个Button和2个Popup和1个TextBox)
         /// </summary>
@@ -678,7 +684,6 @@ namespace FolderScanner
             progressBar.Dispatcher.BeginInvoke(new Action(delegate
             {
                 progressBar.Value = 0.0;
-                tipText.Text = "扫描中...(" + progressBar.Value.ToString() + "%)";
                 ItemDetail.Text = ItemNum.ToString() + " 个项目  " + direNum + " 个文件夹  " + fileNum + " 个文件";
             }));
             foreach (DirectoryInfo dire in Dire.GetDirectories())
@@ -688,6 +693,7 @@ namespace FolderScanner
                 //计算文件夹大小和TreeView相关
                 FolderTree childFolder = new FolderTree(dire.Name, dire.FullName) { Parent = folderTree };
                 folderTree.Children.Add(childFolder);
+                tipText.Dispatcher.BeginInvoke(new Action(delegate { tipText.Text = "扫描中...(" + progressBar.Value.ToString() + "%)" + "\r\n" + childFolder.FullPath; }));
                 GetFolderSize(childFolder);
                 folderTree.Size += childFolder.Size;
                 //ListView相关
